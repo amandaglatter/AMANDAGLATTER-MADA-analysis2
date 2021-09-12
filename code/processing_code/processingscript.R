@@ -5,51 +5,65 @@
 #and saves it as Rds file in the processed_data folder
 
 #load needed packages. make sure they are installed.
-library(readxl) #for loading Excel files
-library(dplyr) #for data processing
 library(here) #to set paths
+library(tidyverse)
+library(dplyr)
+library(readr)
+library(ggplot2)
+
 
 #path to data
 #note the use of the here() package and not absolute paths
-data_location <- here::here("data","raw_data","exampledata.xlsx")
+
+data_location <- here::here("data","raw_data","Air_Quality_Measures_on_the_National_Environmental_Health_Tracking_Network.csv")
 
 #load data. 
-#note that for functions that come from specific packages (instead of base R)
-# I often specify both package and function like so
-#package::function() that's not required one could just call the function
-#specifying the package makes it clearer where the function "lives",
-#but it adds typing. You can do it either way.
-rawdata <- readxl::read_excel(data_location)
+
+rawdata <- read.csv(data_location)
 
 #take a look at the data
 dplyr::glimpse(rawdata)
 
-#dataset is so small, we can print it to the screen.
-#that is often not possible.
-print(rawdata)
+#When I glimpse at the data I notice a few issues.
+#First, for many of the observations, there is no unit reported.
+#This could be an issue. Later observations do report a unit.
+#Next, there are multiple different measure names, meaning that the
+#type of measurement varies. This could make things very complicated.
+#As we discussed in the last module, multiple data types in one table
+#is a common error.
 
-# looks like we have measurements for height (in centimeters) and weight (in kilogram)
+#To simplify, I am first going to subset into just into a single
+#measure name so we can narrow down the data we are looking at.
+#This measure type will be "Number of person-days with maximum 8-hour average 
+#ozone concentration over the National Ambient Air Quality Standard (monitor 
+#and modeled data)"
+#We know that the unit name for this category is "person-days," so the columns
+#"Unit" and "UnitName" are of no use to us. Let's remove these columns.
+#Let's focus on StateName, CountyName, ReportYear, and Value
 
-# there are some problems with the data: 
-# There is an entry which says "sixty" instead of a number. 
-# Does that mean it should be a numeric 60? It somehow doesn't make
-# sense since the weight is 60kg, which can't happen for a 60cm person (a baby)
-# Since we don't know how to fix this, we need to remove the person.
-# This "sixty" entry also turned all Height entries into characters instead of numeric.
-# We need to fix that too.
-# Then there is one person with a height of 6. 
-# that could be a typo, or someone mistakenly entered their height in feet.
-# Since we unfortunately don't know, we'll have to remove this person.
-# similarly, there is a person with weight of 7000, which is impossible,
-# and one person with missing weight.
-# to be able to analyze the data, we'll remove those 5 individuals
+subset1 <- rawdata %>% subset(MeasureName = "Number of person-days with maximum 8-hour average ozone concentration over the National Ambient Air Quality Standard (monitor and modeled data)
+") %>% subset(select = c("StateName", "CountyName", "ReportYear", "Value"))
 
-# this is one way of doing it. Note that if the data gets updated, 
-# we need to decide if the thresholds are ok (newborns could be <50)
+head(subset1)
 
-processeddata <- rawdata %>% dplyr::filter( Height != "sixty" ) %>% 
-                             dplyr::mutate(Height = as.numeric(Height)) %>% 
-                             dplyr::filter(Height > 50 & Weight < 1000)
+#I will make a few more options for analysis from this point.
+
+#Option 1
+#Let's look at just California.
+
+cali <- subset1 %>% subset(StateName == "California")
+
+#Option 2
+#Let's only look at the year 1999 for all states and counties.
+ninenine <- subset1 %>% subset(Year = "1999")
+
+#There's still stuff to clean up, but that's all I'll do for now. Onto you,
+#next group member!
+
+#I'm keeping the below code in case I want to use it in the future
+#processeddata <- rawdata %>% dplyr::filter( Height != "sixty" ) %>% 
+#                             dplyr::mutate(Height = as.numeric(Height)) %>% 
+#                             dplyr::filter(Height > 50 & Weight < 1000)
 
 # save data as RDS
 # I suggest you save your processed and cleaned data as RDS or RDA/Rdata files. 

@@ -72,6 +72,8 @@ ninenine <- subset1 %>% subset(Year = "1999")
 # See here for some suggestions on how to store your processed data:
 # http://www.sthda.com/english/wiki/saving-data-into-r-data-format-rds-and-rdata
 
+processeddata<-cali
+
 # location to save file
 save_data_location <- here::here("data","processed_data","processeddata.rds")
 

@@ -40,7 +40,8 @@ saveRDS(summary_df, file = summarytable_file)
 
 #make a scatterplot of data
 #we also add a linear regression line to it
-p1 <- mydata %>% ggplot(aes(x=Height, y=Weight)) + geom_point() + geom_smooth(method='lm')
+
+p1 <- mydata %>% ggplot(aes(x=ReportYear, y=Value)) + geom_point() + geom_smooth(method='lm') + scale_y_continuous(trans='log2')
 
 #look at figure
 plot(p1)
@@ -54,7 +55,8 @@ ggsave(filename = figure_file, plot=p1)
 ######################################
 
 # fit linear model
-lmfit <- lm(Weight ~ Height, mydata)  
+ 
+lmfit <- lm(Value ~ ReportYear, mydata) 
 
 # place results from fit into a data frame with the tidy function
 lmtable <- broom::tidy(lmfit)
